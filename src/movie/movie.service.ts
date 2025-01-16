@@ -11,9 +11,15 @@ const mockMovies: Movie[] = [
 ];
 
 @Injectable()
-export class AppService {
+export class MovieService {
   private readonly movies: Movie[] = mockMovies;
   private idCounter = 3;
+
+  createMovie(title: string): Movie {
+    const newMovie = { id: this.idCounter++, title };
+    this.movies.push(newMovie);
+    return newMovie;
+  }
 
   getManyMovies(title?: string): Movie[] {
     if (title) {
@@ -34,19 +40,15 @@ export class AppService {
     return movie;
   }
 
-  createMovie(title: string): Movie {
-    const newMovie = { id: this.idCounter++, title };
-    this.movies.push(newMovie);
-    return newMovie;
-  }
-
   updateMovie(id: number, title: string): Movie {
-    const movie = this.getMovieById(id);
-    movie.title = title;
+    const movie = this.movies.find((m) => m.id === id);
+
+    if (!movie) {
+      throw new NotFoundException(`존재하지 않는 ID 값의 영화입니다!`);
+    }
 
     // ? Object.assign(target, source1, source2, ...) : target 객체에 source1, source2, ... 를 복사하는 함수 (얕은 복사)
-    // Object.assign(movie, { title });
-
+    Object.assign(movie, { title });
     return movie;
   }
 
