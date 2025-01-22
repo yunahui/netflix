@@ -10,7 +10,7 @@ import * as Joi from 'joi';
       isGlobal: true,
       validationSchema: Joi.object({
         ENV: Joi.string().valid('dev', 'prod').required(),
-        DB_TYPE: Joi.string().valid('mysql').required(),
+        DB_TYPE: Joi.string().valid('mariadb').required(),
         DB_HOST: Joi.string().required(),
         DB_PORT: Joi.number().required(),
         DB_USERNAME: Joi.string().required(),
@@ -20,7 +20,7 @@ import * as Joi from 'joi';
     }),
     TypeOrmModule.forRootAsync({
       useFactory: (configService: ConfigService) => ({
-        type: configService.get<string>('DB_TYPE') as 'mysql',
+        type: configService.get<string>('DB_TYPE') as 'mariadb',
         host: configService.get<string>('DB_HOST'),
         port: configService.get<number>('DB_PORT'),
         username: configService.get<string>('DB_USERNAME'),
@@ -29,7 +29,7 @@ import * as Joi from 'joi';
         entities: [],
         synchronize: configService.get<string>('ENV') === 'dev',
       }),
-      inject: [],
+      inject: [ConfigService],
     }),
     MovieModule,
   ],
