@@ -3,18 +3,19 @@ import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { Movie } from './entity/movie.entity';
 
-const mockMovies: Movie[] = [
-  { id: 1, title: '해리포터', genre: '판타지' },
-  { id: 2, title: '반지의 제왕', genre: '판타지' },
-];
-
 @Injectable()
 export class MovieService {
-  private readonly movies: Movie[] = mockMovies;
+  private readonly movies: Movie[] = [];
   private idCounter = 3;
 
   createMovie(createMovieDto: CreateMovieDto): Movie {
-    const newMovie = { id: this.idCounter++, ...createMovieDto };
+    const newMovie: Movie = {
+      id: this.idCounter++,
+      ...createMovieDto,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      version: 0,
+    };
     this.movies.push(newMovie);
     return newMovie;
   }
