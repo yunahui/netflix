@@ -36,10 +36,9 @@ export class MovieService {
       throw new NotFoundException(`존재하지 않는 ID 값의 영화입니다!`);
     }
 
-    const updatedMovie = await this.movieRepository.update(
-      { id },
-      updateMovieDto,
-    );
+    await this.movieRepository.update({ id }, updateMovieDto);
+
+    const updatedMovie = await this.movieRepository.findOne({ where: { id } });
 
     return updatedMovie;
   }
