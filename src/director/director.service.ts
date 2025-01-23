@@ -24,7 +24,7 @@ export class DirectorService {
     const director = await this.directorRepository.findOneBy({ id });
 
     if (!director) {
-      throw new NotFoundException('존재하지 않는 감독의 ID 입니다.');
+      throw new NotFoundException('존재하지 않는 ID의 감독입니다!');
     }
 
     return director;
@@ -34,7 +34,7 @@ export class DirectorService {
     const director = await this.directorRepository.findOneBy({ id });
 
     if (!director) {
-      throw new NotFoundException('존재하지 않는 감독의 ID 입니다.');
+      throw new NotFoundException('존재하지 않는 ID의 감독입니다!');
     }
 
     await this.directorRepository.update(id, updateDirectorDto);
@@ -46,7 +46,7 @@ export class DirectorService {
     const director = await this.directorRepository.findOneBy({ id });
 
     if (!director) {
-      throw new NotFoundException('존재하지 않는 감독의 ID 입니다.');
+      throw new NotFoundException('존재하지 않는 ID의 감독입니다!');
     }
 
     await this.directorRepository.delete(id);
