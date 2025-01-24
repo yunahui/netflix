@@ -4,8 +4,9 @@ import { UpdateMovieDto } from './dto/update-movie.dto';
 import { Movie } from './entity/movie.entity';
 import { MovieDetail } from './entity/movie-detail.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
+import { Equal, In, Like, Or, Repository } from 'typeorm';
 import { Director } from 'src/director/entity/director.entity';
+import { Genre } from 'src/genre/entity/genre.entity';
 
 @Injectable()
 export class MovieService {
@@ -16,6 +17,8 @@ export class MovieService {
     private readonly movieDetailRepository: Repository<MovieDetail>,
     @InjectRepository(Director)
     private readonly directorRepository: Repository<Director>,
+    @InjectRepository(Genre)
+    private readonly genreRepository: Repository<Genre>,
   ) {}
 
   async create(createMovieDto: CreateMovieDto) {
@@ -27,12 +30,25 @@ export class MovieService {
       throw new NotFoundException('존재하지 않는 ID의 감독입니다!');
     }
 
+    const genres = await this.genreRepository.find({
+      where: {
+        // id: Or(...createMovieDto.genreIds.map((item) => Equal(item))),
+        id: In(createMovieDto.genreIds),
+      },
+    });
+
+    if (genres.length != createMovieDto.genreIds.length) {
+      throw new NotFoundException(
+        `존재하지 않는 ID의 장르입니다! idx:[${createMovieDto.genreIds.filter((item) => genres.findIndex((genre) => genre.id === item) === -1).toString()}]`,
+      );
+    }
+
     const movie = await this.movieRepository.save({
       title: createMovieDto.title,
-      genre: createMovieDto.genre,
       detail: {
         detail: createMovieDto.detail,
       },
+      genres,
       director,
     });
 
