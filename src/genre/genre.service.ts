@@ -24,7 +24,9 @@ export class GenreService {
     if (count) {
       throw new BadRequestException('이미 존재하는 장르의 이름입니다!');
     }
-    return this.genreRepository.save(createGenreDto);
+    const createdGenre = await this.genreRepository.save(createGenreDto);
+
+    return this.genreRepository.findBy({ id: createdGenre.id });
   }
 
   findAll() {
