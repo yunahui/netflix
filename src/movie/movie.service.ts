@@ -123,11 +123,13 @@ export class MovieService {
       newGenres = genres;
     }
 
+    const movieUpdateFields = {
+      ...movieRest,
+      ...(newDirector && { director: newDirector }),
+    };
+
     if (movieRest) {
-      await this.movieRepository.update(id, {
-        ...movieRest,
-        ...(newDirector && { director: newDirector }),
-      });
+      await this.movieRepository.update(id, movieUpdateFields);
     }
 
     if (detail) {
@@ -136,13 +138,18 @@ export class MovieService {
 
     let updatedMovie = await this.movieRepository.findOne({
       where: { id },
-      relations: ['detail', 'director'],
+      relations: ['detail', 'director', 'genres'],
     });
 
-    updatedMovie.genres = newGenres;
-
-    // updatedMovie = await this.movieRepository.preload(updatedMovie);
-    updatedMovie = await this.movieRepository.save(updatedMovie);
+    if (newGenres) {
+      updatedMovie.genres = newGenres;
+      // updatedMovie = await this.movieRepository.preload(updatedMovie);
+      await this.movieRepository.save(updatedMovie);
+      updatedMovie = await this.movieRepository.findOne({
+        where: { id },
+        relations: ['detail', 'director', 'genres'],
+      });
+    }
 
     return updatedMovie;
   }
