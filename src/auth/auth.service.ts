@@ -1,10 +1,15 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
 import { Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtService, TokenExpiredError } from '@nestjs/jwt';
+import { envVariables } from 'src/common/const/env.const';
 
 @Injectable()
 export class AuthService {
@@ -57,10 +62,15 @@ export class AuthService {
     const payload = await this.jwtService
       .verifyAsync(token, {
         secret: this.configService.get<string>(
-          isRefreshToken ? 'REFRESH_TOKEN_SECRET' : 'ACCESS_TOKEN_SECRET',
+          isRefreshToken
+            ? envVariables.refreshTokenSecret
+            : envVariables.accessTokenSecret,
         ),
       })
-      .catch(() => {
+      .catch((e) => {
+        if (e instanceof TokenExpiredError) {
+          throw new UnauthorizedException('토큰이 만료되었습니다');
+        }
         throw new BadRequestException('잘못된 토큰을 입력했습니다');
       });
 
@@ -124,7 +134,7 @@ export class AuthService {
 
     const hash = await bcrypt.hash(
       password,
-      this.configService.get<string>('HASH_ROUNDS'),
+      this.configService.get<number>(envVariables.hashRounds),
     );
 
     const createdUser = await this.userRepository.save({
