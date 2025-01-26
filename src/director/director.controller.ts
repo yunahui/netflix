@@ -8,6 +8,7 @@ import {
   Delete,
   ClassSerializerInterceptor,
   UseInterceptors,
+  ParseIntPipe,
 } from '@nestjs/common';
 import { DirectorService } from './director.service';
 import { CreateDirectorDto } from './dto/create-director.dto';
@@ -29,20 +30,20 @@ export class DirectorController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  findOne(@Param('id', ParseIntPipe) id: number) {
     return this.directorService.findOne(+id);
   }
 
   @Patch(':id')
   update(
-    @Param('id') id: string,
+    @Param('id', ParseIntPipe) id: number,
     @Body() updateDirectorDto: UpdateDirectorDto,
   ) {
     return this.directorService.update(+id, updateDirectorDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Param('id', ParseIntPipe) id: number) {
     return this.directorService.remove(+id);
   }
 }
