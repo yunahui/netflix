@@ -27,6 +27,15 @@ export class AuthController {
     return this.authService.login(token);
   }
 
+  @Post('token/access')
+  async rotateAccessToken(@Headers('authorization') token: string) {
+    const payload = await this.authService.parseBearerToken(token, true);
+
+    return {
+      accessToken: await this.authService.issueToken(payload, false),
+    };
+  }
+
   // 아래는 실제로 쓰지 않을 예정
   @UseGuards(LocalAuthGuard)
   @Post('login/passport')

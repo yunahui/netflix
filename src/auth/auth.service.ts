@@ -15,14 +15,18 @@ export class AuthService {
     private readonly jwtService: JwtService,
   ) {}
 
-  private parseBasicToken(rawToken: string) {
+  parseBasicToken(rawToken: string) {
     const basicSplit = rawToken.split(' ');
 
     if (basicSplit.length !== 2) {
       throw new BadRequestException('토큰 포맷이 잘못됐습니다.');
     }
 
-    const [, token] = basicSplit;
+    const [basic, token] = basicSplit;
+
+    if (basic.toLowerCase() !== 'basic') {
+      throw new BadRequestException('토큰 포맷이 잘못됐습니다.');
+    }
 
     const decoded = Buffer.from(token, 'base64').toString('utf-8');
 
@@ -35,6 +39,42 @@ export class AuthService {
     const [email, password] = tokenSlpit;
 
     return { email, password };
+  }
+
+  async parseBearerToken(rawToken: string, isRefreshToken: boolean) {
+    const bearerSplit = rawToken.split(' ');
+
+    if (bearerSplit.length !== 2) {
+      throw new BadRequestException('토큰 포맷이 잘못됐습니다.');
+    }
+
+    const [bearer, token] = bearerSplit;
+
+    if (bearer.toLowerCase() !== 'bearer') {
+      throw new BadRequestException('토큰 포맷이 잘못됐습니다.');
+    }
+
+    const payload = await this.jwtService
+      .verifyAsync(token, {
+        secret: this.configService.get<string>(
+          isRefreshToken ? 'REFRESH_TOKEN_SECRET' : 'ACCESS_TOKEN_SECRET',
+        ),
+      })
+      .catch(() => {
+        throw new BadRequestException('잘못된 토큰을 입력했습니다');
+      });
+
+    if (isRefreshToken) {
+      if (payload.type !== 'refresh') {
+        throw new BadRequestException('Refresh 토큰을 입력해주세요');
+      }
+    } else {
+      if (payload.type !== 'access') {
+        throw new BadRequestException('Access 토큰을 입력해주세요');
+      }
+    }
+
+    return payload;
   }
 
   async authenticate(email: string, password: string) {
@@ -53,7 +93,7 @@ export class AuthService {
     return user;
   }
 
-  issueToken(user: User, isRefreshToken: boolean) {
+  issueToken(user: { id: number; role: number }, isRefreshToken: boolean) {
     const refreshTokenSecret = this.configService.get<string>(
       'REFRESH_TOKEN_SECRET',
     );
