@@ -23,5 +23,13 @@ module.exports = {
     '@typescript-eslint/no-explicit-any': 'off',
 
     'prettier/prettier': 'warn',
+    '@typescript-eslint/no-unused-vars': [
+      'error',
+      {
+        caughtErrorsIgnorePattern: '^_',
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      },
+    ],
   },
 };
