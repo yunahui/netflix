@@ -129,11 +129,17 @@ export class MovieService {
       qb.where('movie.title LIKE :title', { title: `%{title}%` });
     }
 
-    // if (take && page) {
-    this.commonService.applyCursorPaginationParamsToQb(qb, dto);
-    // }
+    const { nextCursor } =
+      await this.commonService.applyCursorPaginationParamsToQb(qb, dto);
 
-    return qb.getManyAndCount();
+    const [data, count] = await qb.getManyAndCount();
+
+    // return qb.getManyAndCount();
+    return {
+      data,
+      nextCursor,
+      count,
+    };
   }
 
   async findOne(id: number) {
