@@ -26,7 +26,7 @@ export class GenreService {
     }
     const createdGenre = await this.genreRepository.save(createGenreDto);
 
-    return this.genreRepository.findBy({ id: createdGenre.id });
+    return this.genreRepository.findOneBy({ id: createdGenre.id });
   }
 
   findAll() {

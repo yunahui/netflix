@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateMovieDto } from './dto/create-movie.dto';
 import { UpdateMovieDto } from './dto/update-movie.dto';
 import { Movie } from './entity/movie.entity';
@@ -29,6 +33,14 @@ export class MovieService {
     await qr.startTransaction();
 
     try {
+      const count = await qr.manager.countBy(Movie, {
+        title: createMovieDto.title,
+      });
+
+      if (count !== 0) {
+        throw new BadRequestException('이미 존재하는 영화 제목입니다!');
+      }
+
       const director = await qr.manager.findOneBy(Director, {
         id: createMovieDto.directorId,
       });
