@@ -22,6 +22,7 @@ import { BearerTokenMiddleware } from './auth/middleare/bearer-token.middleware'
 import { APP_GUARD } from '@nestjs/core';
 import { AuthGuard } from './auth/guard/auth.guard';
 import { RBACGuard } from './auth/guard/rbac.guard';
+
 @Module({
   imports: [
     ConfigModule.forRoot({

@@ -8,9 +8,11 @@ import { UpdateMovieDto } from './dto/update-movie.dto';
 import { Movie } from './entity/movie.entity';
 import { MovieDetail } from './entity/movie-detail.entity';
 import { InjectRepository } from '@nestjs/typeorm';
-import { DataSource, In, Like, Repository } from 'typeorm';
+import { DataSource, In, Repository } from 'typeorm';
 import { Director } from 'src/director/entity/director.entity';
 import { Genre } from 'src/genre/entity/genre.entity';
+import { GetMoviesDto } from './dto/get-movies.dto';
+import { CommonService } from 'src/common/common.service';
 
 @Injectable()
 export class MovieService {
@@ -24,6 +26,7 @@ export class MovieService {
     @InjectRepository(Genre)
     private readonly genreRepository: Repository<Genre>,
     private readonly dataSource: DataSource,
+    private readonly commonService: CommonService,
   ) {}
 
   async create(createMovieDto: CreateMovieDto) {
@@ -114,19 +117,23 @@ export class MovieService {
     }
   }
 
-  findAll(title?: string) {
-    if (!title) {
-      return this.movieRepository.find({
-        relations: ['director', 'genres'],
-      });
+  async findAll(dto: GetMoviesDto) {
+    const { title, take, page } = dto;
+
+    const qb = this.movieRepository
+      .createQueryBuilder('movie')
+      .leftJoinAndSelect('movie.genres', 'genres')
+      .leftJoinAndSelect('movie.director', 'director');
+
+    if (title) {
+      qb.where('movie.title LIKE :title', { title: `%{title}%` });
     }
 
-    return this.movieRepository.find({
-      where: {
-        title: Like(`%${title}%`),
-      },
-      relations: ['director', 'genres'],
-    });
+    if (take && page) {
+      this.commonService.applyPagePaginationParamsToQb(qb, dto);
+    }
+
+    return qb.getManyAndCount();
   }
 
   async findOne(id: number) {
